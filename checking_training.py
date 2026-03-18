@@ -17,21 +17,21 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 N=10000
 q=5
 # computes potts energy on graph
-def discrete_energy(graph):
-    
+def discrete_energy(graph, num_colors=5):
+
     # compute one-hot features
-    max_indices   = torch.argmax(graph.x[:,:5], dim=1)
-    rows          = torch.arange(len(graph.x[:,:5]), device = graph.x.device) # rows indexes
-    one_hot_graph = torch.zeros_like(graph.x[:,:5], device = graph.x.device)
-    one_hot_graph[rows, max_indices] = 1 
+    max_indices   = torch.argmax(graph.x[:,:num_colors], dim=1)
+    rows          = torch.arange(len(graph.x[:,:num_colors]), device = graph.x.device) # rows indexes
+    one_hot_graph = torch.zeros_like(graph.x[:,:num_colors], device = graph.x.device)
+    one_hot_graph[rows, max_indices] = 1
 
     # compute percentage of conflicting edges
-    conflicts_tensor = torch.sum(one_hot_graph[graph.edge_index[0],:5] * one_hot_graph[graph.edge_index[1],:5], dim = 1)
+    conflicts_tensor = torch.sum(one_hot_graph[graph.edge_index[0],:num_colors] * one_hot_graph[graph.edge_index[1],:num_colors], dim = 1)
     avg_conflicts    = torch.sum(conflicts_tensor, dim = 0)/conflicts_tensor.shape[0]
 
     return avg_conflicts
-def continuous_energy( graph):
-        
+def continuous_energy(graph, num_colors=5):
+
         # compute the energy of the batch
         scalar_product_tensor = torch.sum((graph.x[graph.edge_index[0],:num_colors] * graph.x[graph.edge_index[1],:num_colors]), dim=1)
         continuous_energy     = torch.mean(scalar_product_tensor)
@@ -117,10 +117,10 @@ for trained_model in ['t0_20240827-075801','t0_20240827-075911','t0_20240827-075
                                         num_graphs += 1
                                         random_graph = random_graph.to(device) 
                                         perfect_graph = random_graph.clone()
-                                        random_graph.x[:,:5]=torch.nn.functional.one_hot(torch.randint(0,5,(10000,),device=device),num_classes=5).float()
+                                        random_graph.x[:,:q]=torch.nn.functional.one_hot(torch.randint(0,q,(N,),device=device),num_classes=q).float()
                                         #transform max_indices to one-hot 
                                         for i in range(10):
-                                            random_graph.x[:,:5]=torch.sqrt(alpha)*random_graph.x[:,:5]+torch.sqrt(1-alpha)*torch.randn((10000,5),device=device)  
+                                            random_graph.x[:,:q]=torch.sqrt(alpha)*random_graph.x[:,:q]+torch.sqrt(1-alpha)*torch.randn((N,q),device=device)  
                                             #apply softmax
                                             random_graph.x[:,:5]=torch.nn.functional.softmax(random_graph.x[:,:5],dim=1)
                                             continuous=continuous_energy(random_graph)

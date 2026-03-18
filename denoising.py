@@ -147,7 +147,7 @@ for num_iterations in nums_iterations:
                             if len(graphs_window) == correlation_dist+1: autocorr = autocorrelation_func(graphs_window[0], graphs_window[-1])
                             else: autocorr = torch.tensor(0.)
                             autocorrelations.append(autocorr.detach().cpu().numpy())
-                            alphas.append(alpha_min.detach().cpu().numpy())
+                            alphas.append(alpha.detach().cpu().numpy())
 
                     print(f"Time: {time()-t0:.1f} - Best energy: {e_best.item():.8f} - Num solved: {solved_counter} - Num graphs: {G} - Iterations: {num_iterations}")
 
@@ -165,4 +165,3 @@ for num_iterations in nums_iterations:
                 # write log
                 with open(f'Logs/{log_type}/logfile.csv', 'a+') as f:
                     f.write(f'{conn},{num_iterations},{torch.mean(torch.tensor(best_energies)).item():.8f},{torch.std(torch.tensor(best_energies)).item():.8f},{type},{alg},{avg_time/G:.2f},{solved_counter},{num_nodes}\n')
-                f.close()

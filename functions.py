@@ -21,16 +21,16 @@ def find_checkpoints(directory):
     return None
 
 # computes potts energy on graph
-def discrete_energy(graph):
-    
+def discrete_energy(graph, num_colors=5):
+
     # compute one-hot features
-    max_indices   = torch.argmax(graph.x[:,:5], dim=1)
-    rows          = torch.arange(len(graph.x[:,:5]), device = graph.x.device) # rows indexes
-    one_hot_graph = torch.zeros_like(graph.x[:,:5], device = graph.x.device)
-    one_hot_graph[rows, max_indices] = 1 
+    max_indices   = torch.argmax(graph.x[:,:num_colors], dim=1)
+    rows          = torch.arange(len(graph.x[:,:num_colors]), device = graph.x.device) # rows indexes
+    one_hot_graph = torch.zeros_like(graph.x[:,:num_colors], device = graph.x.device)
+    one_hot_graph[rows, max_indices] = 1
 
     # compute percentage of conflicting edges
-    conflicts_tensor = torch.sum(one_hot_graph[graph.edge_index[0],:5] * one_hot_graph[graph.edge_index[1],:5], dim = 1)
+    conflicts_tensor = torch.sum(one_hot_graph[graph.edge_index[0],:num_colors] * one_hot_graph[graph.edge_index[1],:num_colors], dim = 1)
     avg_conflicts    = torch.sum(conflicts_tensor, dim = 0)/conflicts_tensor.shape[0]
 
     return avg_conflicts

@@ -171,6 +171,13 @@ double computeOverlap(int color_assigned[N]){
     if (overlap > maxOver) maxOver = overlap;
   }
   double overlap_value = (double)(Q*maxOver-N)/(Q-1)/N;
-  return (double)(Q*maxOver-N)/(Q-1)/N;
+
+  free(graph);
+  free(deg);
+  free(neigh);
+  free(color);
+  free(perm);
+
+  return overlap_value;
 
 }

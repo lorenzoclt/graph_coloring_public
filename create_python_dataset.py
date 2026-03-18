@@ -29,7 +29,7 @@ def parse_graph_data(file_path):
 def create_torch_geometric_graphs(graphs,N):
     torch_graphs = []
     for edges in graphs:
-        edge_index = torch.tensor(edges, dtype=torch.float).t().contiguous()
+        edge_index = torch.tensor(edges, dtype=torch.long).t().contiguous()
         num_nodes = max(max(edges)) + 1
         x= torch.rand((N, q))        
         torch_graph = Data(x=x, edge_index=edge_index)

@@ -106,8 +106,8 @@ class MMPN_denoiser(pl.LightningModule):
         for phi, gamma in zip(self.phi_modules, self.gamma_modules):
 
             # message
-            x_i = x[edge_index[0]] # x_i receives messages from x_j
-            x_j = x[edge_index[1]] # x_j sends messages to x_i
+            x_i = x[edge_index[0]] # x_i is the source node (sends messages)
+            x_j = x[edge_index[1]] # x_j is the target node (receives messages)
             joint_input = torch.cat([x_i, x_j], dim=-1)
             messages = phi(joint_input)
 
@@ -132,7 +132,7 @@ class MMPN_denoiser(pl.LightningModule):
         x = softmax(x/self.temp, dim=1)
 
         return x
-    
+
     # computes potts energy on graph
     def continuous_energy(self, graph):
         
@@ -176,7 +176,7 @@ class MMPN_denoiser(pl.LightningModule):
     def configure_optimizers(self):
 
         optimizer = Adam(self.parameters(), lr=self.learning_rate)
-        scheduler = StepLR(optimizer, step_size=self.patience_factor, gamma=self.patience, verbose=True)
+        scheduler = StepLR(optimizer, step_size=self.patience, gamma=self.patience_factor, verbose=True)
 
         return [optimizer], [scheduler]
     
@@ -184,9 +184,9 @@ class MMPN_denoiser(pl.LightningModule):
 
         # exclude degree from features
         target = train_batch.x[:,:self.num_colors].clone()
-        num_nodes = int(train_batch.x.shape[0]/(self.batch_size))
-        self.alpha_t = self.table_alpha[torch.randint(0, 1000,(self.batch_size,))].to(train_batch.x.device)
-        self.alpha_t = self.alpha_t.repeat_interleave(num_nodes)
+        num_graphs = train_batch.num_graphs
+        self.alpha_t = self.table_alpha[torch.randint(0, 1000,(num_graphs,))].to(train_batch.x.device)
+        self.alpha_t = self.alpha_t[train_batch.batch]
         train_batch.x[:,:self.num_colors] = torch.sqrt(self.alpha_t).unsqueeze(1)*train_batch.x[:,:self.num_colors] + torch.sqrt(1-self.alpha_t).unsqueeze(1)*torch.randn_like(train_batch.x[:,:self.num_colors])
   
         # forward pass
@@ -214,8 +214,8 @@ class MMPN_denoiser(pl.LightningModule):
     
     def validation_step(self, val_batch, batch_idx):
 
-        target      = val_batch.x
-        val_batch.x = self.forward(val_batch) 
+        target      = val_batch.x.clone()
+        val_batch.x[:,:self.num_colors] = self.forward(val_batch)
         overlap     = self.overlap(val_batch, target)
         
         # compute conflicts and entropy
@@ -269,8 +269,8 @@ class MMPN_torch(pl.LightningModule):
         for phi, gamma in zip(self.phi_modules, self.gamma_modules):
 
             # message
-            x_i = x[edge_index_0] # x_i receives messages from x_j
-            x_j = x[edge_index_1] # x_j sends messages to x_i
+            x_i = x[edge_index_0] # x_i is the source node (sends messages)
+            x_j = x[edge_index_1] # x_j is the target node (receives messages)
             joint_input = torch.cat([x_i, x_j], dim=-1)
             messages = phi(joint_input)
 

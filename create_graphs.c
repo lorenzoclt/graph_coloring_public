@@ -147,9 +147,8 @@ int main() {
     //#file_deg = fopen("deg_dataset.txt", "w");
     start = clock();
     if (file_neigh == NULL) {
-        printf("File inesistente creazione ....\n");
-        fprintf(file_neigh, "Grafi:\n\n");
-        
+        printf("Error: could not open file for writing.\n");
+        return 1;
     }
     // genera NUMGRAPHS grafi e scrivi neighbor su file
     for (i = 0; i < NUMGRAPHS; i++) {

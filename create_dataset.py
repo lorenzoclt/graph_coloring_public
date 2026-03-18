@@ -116,11 +116,6 @@ def generate_dataset(all_nodes, num_graphs, num_colors, connectivities, split, t
 
     assert split[0] + split[1] + split[2] == 1, "split must be a list of three numbers that sum to 1"
 
-    # generates and stores permutations for each number of nodes
-    maps = {}
-    for idx, _ in enumerate(all_nodes):
-        maps[idx] = generate_permutation(idx)
-    
     # iterates over each number of nodes and each connectivity degree for the given chromatic number
     for num_nodes in all_nodes:
         for conn in connectivities:

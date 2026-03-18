@@ -21,7 +21,8 @@ for _ in range(num_trials):
         num_epochs, batch_size, learning_rate, patience, patience_factor, num_colors, latent_dim, num_layers, temp, entropy_factor, entropy_time, dropout_rate, self_loops, gamma,alpha_min,alpha_max,t= hparams
         
         # set batch size per gpu
-        batch_size_per_gpu = batch_size//torch.cuda.device_count()
+        num_gpus = max(1, torch.cuda.device_count())
+        batch_size_per_gpu = batch_size//num_gpus
 
         # create path to save weights and load data
         timestr = datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -38,7 +39,7 @@ for _ in range(num_trials):
 
         # create TensorBoard logger
         logger  = TensorBoardLogger(log_dir, name = "training")
-        trainer = Trainer(max_epochs = num_epochs, logger = logger, callbacks=[checkpoint])
+        trainer = Trainer(max_epochs = num_epochs, logger = logger, callbacks=[early_stopping, checkpoint])
 
         # instantiate lightning model
         model = MMPN_denoiser(batch_size, latent_dim, num_colors, num_layers, dropout_rate, self_loops, temp, learning_rate, patience_factor, patience, entropy_time, entropy_factor, gamma, alpha_min, alpha_max)
