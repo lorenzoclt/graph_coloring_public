@@ -67,6 +67,14 @@ python denoising.py
 
 Results are logged to `Logs/`.
 
+### Run demo
+
+```bash
+python demo.py
+
+```
+
+
 ## Dependencies
 
 - Python 3.8+
